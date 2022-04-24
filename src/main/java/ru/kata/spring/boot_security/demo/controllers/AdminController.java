@@ -1,11 +1,11 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
+import ru.kata.spring.boot_security.demo.models.Role;
 import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
@@ -25,14 +25,12 @@ public class AdminController {
     @GetMapping
     public String userList(Model model) {
         List<User> list = userService.allUsers();
+        List<Role> listRoles = userService.allRoles();
         model.addAttribute("userList", list);
+        model.addAttribute("listRoles", listRoles);
+        model.addAttribute("userNew", new User());
+        model.addAttribute("userGet", userService.findByEmail(authentication.getName()));
         return "users";
-    }
-
-    @GetMapping("/new")
-    public String saveUser(Model model) {
-        model.addAttribute("user", new User());
-        return "new_user";
     }
 
     @PostMapping("/new")
@@ -41,19 +39,14 @@ public class AdminController {
         return ("redirect:/admin");
     }
 
-    @GetMapping("{id}")
-    public String getUser(@PathVariable("id") Long id, Model model) {
-        model.addAttribute("user", userService.findById(id));
-        return "update_user";
-    }
 
-    @PostMapping("{id}")
-    public String updateUser(@PathVariable("id") Long id,@ModelAttribute("user") User user) {
+    @PatchMapping("{id}")
+    public String updateUser(@PathVariable("id") Long id, @ModelAttribute("user") User user) {
         userService.update(user);
         return ("redirect:/admin");
     }
 
-    @DeleteMapping("{id}/delete")
+    @DeleteMapping("delete/{id}")
     public String deleteUser(@PathVariable("id") Long id) {
         userService.deleteUser(id);
         return "redirect:/admin";
